@@ -8,12 +8,7 @@ Forecasts how many people watch Grand Theft Auto VI live on Twitch in each hour 
 
 ## Method
 
-The earlier entries missed the median by about 44% on the practice set, and shrinking the intervals changed nothing, so this entry attacks the median itself. Two facts about the comparable launches drive it:
-
-1. A launch's day shape depends strongly on its hour-1 size: small launches explode 100x later in the day while big launches stay near their hour-1 level (late-hour log-ratio vs log hour-1 slope about -0.9). A single median ratio is far too high for a big anchor like GTA VI.
-2. Launches that unlock at rolling local midnight have a different day shape from simultaneous-global launches. GTA VI unlocks at rolling local midnight.
-
-Each hour's forecast blends two legs: a similarity-weighted median of the comparables' log-ratios to hour 1, and a per-hour weighted regression of the log-ratio on log hour-1 plus a rolling-unlock indicator. The median is the geometric mean of the two legs; the spread is the regression's residual spread.
+The previous entry fixed the median with a regression on log hour-1 plus a rolling-unlock flag, blended with a similarity-weighted median of past launches' day shapes. This entry keeps that shape and fixes the calibration around it: the tier down-weighting of early-access and weak launches is gone (it cost accuracy on every cut in leave-one-out testing), the similarity and regression widths are both 1.25, and the blend puts 65% on the regression leg. The spread still comes from the regression's residual spread, so the intervals stay honest instead of padded.
 
 ## Run
 
