@@ -1,39 +1,24 @@
-[![make.fun bounty](https://make.fun/badge/gta6-twitch-ccu-forecast-01.svg)](https://make.fun/bounty/gta6-twitch-ccu-forecast-01)
-[![make.fun rank](https://make.fun/badge/gta6-twitch-ccu-forecast-01/Ikball53/gta6-twitch-ccu-forecast-01/rank.svg)](https://make.fun/bounty/gta6-twitch-ccu-forecast-01)
-[![make.fun reward](https://make.fun/badge/gta6-twitch-ccu-forecast-01/Ikball53/gta6-twitch-ccu-forecast-01/reward.svg)](https://make.fun/bounty/gta6-twitch-ccu-forecast-01)
+[![Bounty](https://make.fun/badge/gta6-twitch-ccu-forecast-01/Ikball53/gta6-twitch-ccu-forecast-01/bounty.svg)](https://make.fun/bounty/gta6-twitch-ccu-forecast-01)
+[![Rank](https://make.fun/badge/gta6-twitch-ccu-forecast-01/Ikball53/gta6-twitch-ccu-forecast-01/rank.svg)](https://make.fun/bounty/gta6-twitch-ccu-forecast-01)
+[![Reward](https://make.fun/badge/gta6-twitch-ccu-forecast-01/Ikball53/gta6-twitch-ccu-forecast-01/reward.svg)](https://make.fun/bounty/gta6-twitch-ccu-forecast-01)
 
-# GTA VI launch-day Twitch forecast
+# GTA VI launch-day Twitch viewers forecast
 
-Forecasts how many people watch Grand Theft Auto VI live on Twitch in each
-hour of its release day (2026-11-19 UTC), hours 2 to 24, as five quantiles
-per hour — from the first hour's viewer count alone.
+Forecasts how many people watch Grand Theft Auto VI live on Twitch in each hour of its release day, 2026-11-19 (UTC), from everything recorded up to the end of the first hour, as five quantiles per hour.
 
-## How it works
+## Method
 
-The first hour's count is the anchor. Thirty-seven past blockbuster launches
-each lend the shape of their own day, written as the log of each later hour
-divided by that launch's first hour. A launch whose first hour looked like
-ours counts more (a Gaussian weight on the log gap), and a launch that
-resembles GTA VI's profile — console-only, single-player, no early-access
-mess — counts more again. For every hour we read off the weighted 5/25/50/
-75/95 percentiles of those shapes, nudge them when our first hour sits above
-every launch on record (a log-linear tilt fitted on the big launches only,
-so the forecast keeps growing with the anchor instead of falling back to an
-average shape), smooth the result across neighbouring hours, and then tighten
-the band toward the median so the 90% band really covers about nine hours in
-ten. Standard library only, deterministic, no network.
+The earlier entries missed the median by about 44% on the practice set, and shrinking the intervals changed nothing, so this entry attacks the median itself. Two facts about the comparable launches drive it:
 
-## Run it
+1. A launch's day shape depends strongly on its hour-1 size: small launches explode 100x later in the day while big launches stay near their hour-1 level (late-hour log-ratio vs log hour-1 slope about -0.9). A single median ratio is far too high for a big anchor like GTA VI.
+2. Launches that unlock at rolling local midnight have a different day shape from simultaneous-global launches. GTA VI unlocks at rolling local midnight.
+
+Each hour's forecast blends two legs: a similarity-weighted median of the comparables' log-ratios to hour 1, and a per-hour weighted regression of the log-ratio on log hour-1 plus a rolling-unlock indicator. The median is the geometric mean of the two legs; the spread is the regression's residual spread.
+
+## Run
 
 ```sh
-python3 main.py
+MAKEFUN_INPUT_DIR=input MAKEFUN_OUTPUT_DIR=out python3 main.py
 ```
 
-Reads every `*.in` case from `$MAKEFUN_INPUT_DIR` (or `/input`) and writes
-one `*.out` forecast per case to `$MAKEFUN_OUTPUT_DIR` (or `/output`).
-
-## Local validation
-
-See `VALIDATION.md`. Leave-one-out over the 37 launch curves in the kit:
-mean pinball loss 0.4207 (house baseline 0.9296), 30/37 cases beaten,
-90% coverage 0.832 overall and 0.866 on big launches.
+Pure Python standard library, deterministic, no network.
